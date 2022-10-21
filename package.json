@@ -1,0 +1,15 @@
+{
+	"name": "localhost-http-proxy",
+	"version": "0.1.0",
+  "type": "module",
+	"description": "proxy manual",
+	"main": "index.js",
+	"author": "goth_d_",
+	"license": "MIT",
+	"scripts": {
+		"start": "node ./index.js"
+	},
+	"dependencies": {
+		"undici": "^5.11.0"
+	}
+}
