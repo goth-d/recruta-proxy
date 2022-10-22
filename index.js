@@ -1,7 +1,8 @@
 import { createServer as criarServidor } from "http";
 import { request as requisicao } from "undici";
-import { mesclarProxyCabecalhos } from "./util.js";
+import { mesclarCabecalhos } from "./util.js";
 
+/** A instância do servidor proxy */
 const servidor = criarServidor((req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
@@ -21,7 +22,7 @@ const servidor = criarServidor((req, res) => {
 
     // TODO: add requisicao log
 
-    requisicao(endereco + req.url, { method: req.method, body: req.body, headers: mesclarProxyCabecalhos(req.headers) })
+    requisicao(endereco + req.url, { method: req.method, body: req.body, headers: mesclarCabecalhos(req.headers) })
       .then((alvoRes) => {
 
         res.writeHead(alvoRes.statusCode, alvoRes.headers);
@@ -36,9 +37,10 @@ const servidor = criarServidor((req, res) => {
 
 });
 
+/** @type {number} */
 const porta = process.env.PORT || 44;
 
-servidor.listen(porta, () => {
+servidor.listen(Number(porta), () => {
   console.log("Servidor proxy http/1.1 escutando na porta " + porta);
 });
 

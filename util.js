@@ -1,23 +1,35 @@
 import { Headers } from "undici";
 
+/**
+ * Remove as propriedades que são, geralmente, recriadas entre cada requisição
+ * @param {NodeJS.Dict.<string, string>} cabecalhosDic - Dicionário de cabeçalhos http
+ * @returns {NodeJS.Dict.<string, string>} Um novo dicionário
+ */
 function purgarCabecalhos(cabecalhosDic) {
-  const novoCabecalhos = {};
-  for (const c in cabecalhosDic) if (!(c in httpCabecalhosPadroes)) novoCabecalhos[c] = cabecalhosDic[c];
+  const novoCabecalhosDic = {};
+  for (const c in cabecalhosDic) if (!(c in httpCabecalhosPadroes)) novoCabecalhosDic[c] = cabecalhosDic[c];
 
-  return novoCabecalhos;
+  return novoCabecalhosDic;
 }
 
-export function mesclarProxyCabecalhos(reqCabecalhosDic) {
+/**
+ * Cria um novo cabeçalho purgado pelo proxy.
+ * Todas propriedades customizadas são mantidas, assim como algumas propriedades padrões
+ * @param {NodeJS.Dict.<string, string>} reqCabecalhosDic - Dicionário de cabeçalhos http provindo da requisição original
+ * @returns {NodeJS.Dict.<string, string>} Um objeto de cabeçalhos
+ */
+export function mesclarCabecalhos(reqCabecalhosDic) {
   const cabecalhosPurgado = purgarCabecalhos(reqCabecalhosDic);
   const cabecalhos = new Headers(cabecalhosPurgado);
 
-  for (const c of proxyCabecalhosMeclaveis) if (c in reqCabecalhosDic) cabecalhos.append(c, reqCabecalhosDic[c]);
+  for (const c of proxyCabecalhosPadroesMesclaveis) if (c in reqCabecalhosDic) cabecalhos.append(c, reqCabecalhosDic[c]);
 
   return cabecalhos;
 }
 
+/** @type {string[]} */
 // modifique isto de acordo a sua precisão
-const proxyCabecalhosMeclaveis = [
+const proxyCabecalhosPadroesMesclaveis = [
   "accept",
   'accept-language',
   // 'accept-patch',
@@ -84,6 +96,7 @@ const proxyCabecalhosMeclaveis = [
 
 ]
 
+/** @type {Object.<string, string | string[]>} */
 const httpCabecalhosPadroes = Object.create({
   accept: "",
   'accept-language': "",
