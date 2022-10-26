@@ -1,16 +1,18 @@
 {
-	"name": "localhost-http-proxy",
+	"name": "recruta-proxy",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "proxy manual",
+	"description": "Direciona quaisquer cors requisições http para a internet",
 	"main": "index.js",
 	"author": "goth_d_",
 	"license": "MIT",
 	"scripts": {
-		"start": "node ./index.js",
-		"dev": "nodemon ./index.js"
+		"start": "cross-env DEBUG=Recruta:* node ./index.js",
+		"dev": "cross-env DEBUG=Recruta:* nodemon ./index.js"
 	},
 	"dependencies": {
+    "cross-env": "^7.0.3",
+		"debug": "^4.3.4",
 		"finalhandler": "^1.2.0",
 		"http-errors": "^2.0.0",
 		"morgan": "^1.10.0",
