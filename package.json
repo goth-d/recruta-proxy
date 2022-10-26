@@ -1,15 +1,22 @@
 {
 	"name": "localhost-http-proxy",
 	"version": "0.1.0",
-  "type": "module",
+	"type": "module",
 	"description": "proxy manual",
 	"main": "index.js",
 	"author": "goth_d_",
 	"license": "MIT",
 	"scripts": {
-		"start": "node ./index.js"
+		"start": "node ./index.js",
+		"dev": "nodemon ./index.js"
 	},
 	"dependencies": {
+		"finalhandler": "^1.2.0",
+		"http-errors": "^2.0.0",
+		"morgan": "^1.10.0",
 		"undici": "^5.11.0"
+	},
+	"devDependencies": {
+		"nodemon": "^2.0.20"
 	}
 }
