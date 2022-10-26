@@ -8,17 +8,19 @@
 	"license": "MIT",
 	"scripts": {
 		"start": "cross-env DEBUG=Recruta:* node ./index.js",
-		"dev": "cross-env DEBUG=Recruta:* nodemon ./index.js"
+		"bg": "cross-env DEBUG=Recruta:* pm2 start ./ecosystem.config.cjs --attach --wait-ready",
+		"stop": "./node_modules/.bin/pm2 stop ./ecosystem.config.cjs",
+    "list": "./node_modules/.bin/pm2 list",
+    "monit": "./node_modules/.bin/pm2 monit",
+		"dev": "cross-env DEBUG=Recruta:* pm2 start ./ecosystem.config.cjs --wait-ready --watch & npm run monit"
 	},
 	"dependencies": {
-    "cross-env": "^7.0.3",
+		"cross-env": "^7.0.3",
 		"debug": "^4.3.4",
 		"finalhandler": "^1.2.0",
 		"http-errors": "^2.0.0",
 		"morgan": "^1.10.0",
+		"pm2": "^5.2.2",
 		"undici": "^5.11.0"
-	},
-	"devDependencies": {
-		"nodemon": "^2.0.20"
 	}
 }
