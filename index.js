@@ -1,35 +1,57 @@
 import Recruta from "./servidor.js";
 import ImprimeRegistros from "./encanamento.js";
 import debug from "debug";
-import { createServer as criarServidor } from "http";
-
-/** @type {number} */
-const Porta = Number(process.env.PORT) || 44;
-
-/** Útil para depurar saídas no console */
-const depurador = debug("Recruta:" + Porta);
 // saída stdout
-depurador.log = console.log.bind(console);
+debug.log = console.log.bind(console);
+import { createServer as criarServidor, IncomingMessage, Server, ServerResponse } from "node:http";
+import { tipoExecucao, OpcoesPredefinidas } from "./util.js";
 
-/** Saída de registros http */
-const depuradorSockets = depurador.extend("sockets");
+const Executando = tipoExecucao(import.meta.url);
 
-/** A instância do servidor proxy */
-const RecrutaProxy = criarServidor(Recruta(ImprimeRegistros(depuradorSockets)));
+if (Executando.cli || Executando.cp) RecrutaProxy(Number(process.env.PORT));
 
-RecrutaProxy.listen(Porta, () => {
-  // pm2 inicia
-  process.send('ready');
-  setTimeout(() => depurador("Servidor proxy na escuta capitão"), 1000);
-});
+/**
+ * Função que instancia o servidor proxy
+ * @param {number} porta Número da porta de escuta do servidor
+ * @param {import("./util.js").OpçõesRecruta} [opcoes?] Opções adicionais do servidor
+ * @returns {Server<typeof IncomingMessage, typeof ServerResponse>} O servidor proxy
+ */
+export default function RecrutaProxy(porta, opcoes = {}) {
+	porta = porta || 44;
+	opcoes = { ...OpcoesPredefinidas, ...opcoes };
+	/** Útil para depurar saídas no console */
+	const depurador = opcoes.depuradorOn ? debug(`${opcoes.depuradorString}:${porta}`) : console.log;
+	if (opcoes.depuradorOn) depurador.enabled = true;
+	/** Saída de registros http */
+	const depuradorSockets =
+		opcoes.imprimeRegistros && opcoes.depuradorOn ? depurador.extend("sockets") : console.log;
+	if (opcoes.imprimeRegistros) depuradorSockets.enabled = true;
 
-export default RecrutaProxy;
+	/** A instância do servidor proxy */
+	const servidor = criarServidor(
+		Recruta(opcoes.imprimeRegistros ? ImprimeRegistros(depuradorSockets) : null)
+	);
 
-process.on('unhandledRejection', (erro) => {
-  throw erro;
-})
-process.on("uncaughtException", (erro) => {
-  depurador(/*"Kowalski ", */"Relatório :" + erro.name, "\n" + erro.message, "\n" + erro.stack);
-  // pm2 reinicia
-  process.send("ready");
-});
+	servidor.listen(porta, () => {
+		if (Executando.cp) {
+			// pm2 iniciar
+			process.send("ready");
+			setTimeout(() => depurador("Servidor proxy na escuta capitão"), 1000);
+		} else {
+			depurador("Servidor proxy na escuta capitão");
+		}
+	});
+
+	process.on("unhandledRejection", (erro) => {
+		throw erro;
+	});
+	process.on("uncaughtException", (erro) => {
+		depurador(/*"Kowalski ", */ "Relatório :" + erro.name, "\n" + erro.message, "\n" + erro.stack);
+		if (Executando.cp) {
+			// pm2 reiniciar
+			process.send("ready");
+		}
+	});
+
+	return servidor;
+}
