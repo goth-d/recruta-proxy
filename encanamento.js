@@ -8,8 +8,7 @@ class MorganFluxoEscrevivel extends Escrevivel {
   }
   /** Tokens do morgan são passados para o depurador */
   write(socketTokens) {
-    // FIXME: esta abordagem imprime o chunk do intervalo +0ms em linha separada
-    this.depurador(socketTokens);
+    this.depurador(String(socketTokens).trimEnd() /* previne eol com \n, entao o depurador pode modificar a saída */ );
   }
 }
 
