@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from "node:http";
+
 import { request as requisicao } from "undici";
 import { mesclarCabecalhos, OpcoesPredefinidasServidor } from "./util.js";
 import requisicaoGerenciadorFinal from "finalhandler";
@@ -6,8 +6,8 @@ import criarErro from "http-errors";
 
 /**
  * @callback GerenciadorRequisição
- * @param {IncomingMessage} req
- * @param {ServerResponse} res
+ * @param {import("node:http").IncomingMessage} req
+ * @param {import("node:http").ServerResponse} res
  * @returns {void}
  */
 
@@ -49,8 +49,8 @@ const Recruta = (encanamento, opcoes) => {
 
 /**
  * @callback GerenciadorRequisiçãoProxy
- * @param {IncomingMessage} req
- * @param {ServerResponse} res
+ * @param {import("node:http").IncomingMessage} req
+ * @param {import("node:http").ServerResponse} res
  * @param {RequisiçãoGerenciadorFinal} gerenciadorErros Executado caso for preciso abortar a requisição
  * @param {import("./util.js").OpçõesServidor} [opcoes]
  * @returns {void}
@@ -79,7 +79,7 @@ function lidarComRequisicao(req, res, gerenciadorErros, opcoes) {
 					"Não há um endereço no cabeçalho da requisição, defina 'endereco-alvo' com o endereço [<scheme>://<hostname> | <scheme>://<hostname>:<port>] a ser requisitado"
 				)
 			);
-		} else if (headers["endereco-alvo"]) {
+		} else if (req.headers["endereco-alvo"]) {
 			// lida com a propriedade do cabeçalho
 			if (Array.isArray(endereco)) endereco = endereco[0];
 			delete req.headers["endereco-alvo"];

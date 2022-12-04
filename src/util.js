@@ -50,7 +50,7 @@ export function tipoExecucao(arquivoUrl) {
 }
 
 export function obterNomeProxy() {
-	return requerer("./ecosystem.config.cjs").apps[0].name;
+	return requerer("../ecosystem.config.cjs").apps[0].name;
 }
 
 /**

@@ -1,10 +1,10 @@
 import Recruta from "./servidor.js";
 import ImprimeRegistros from "./encanamento.js";
+import { tipoExecucao, OpcoesPredefinidas } from "./util.js";
 import debug from "debug";
 // saída stdout
 debug.log = console.log.bind(console);
-import { createServer as criarServidor, IncomingMessage, Server, ServerResponse } from "node:http";
-import { tipoExecucao, OpcoesPredefinidas } from "./util.js";
+import { createServer as criarServidor } from "node:http";
 
 /** @type {number} */
 let ProxyPorta = 44;
@@ -14,14 +14,17 @@ const Executando = tipoExecucao(import.meta.url);
 if (Executando.cli || Executando.cp) RecrutaProxy(Number(process.env.PORT) || undefined);
 
 /**
- * @param {string | URL} url URL do endereço alvo da requisição
+ * @param {string | URL} [url] URL do endereço alvo da requisição
  * @param {number} [proxyPorta] Porta do endereço proxy, ex: `44`
  * @param {string} [proxyHostname] Hostname do endereço proxy, ex: `localhost`
  * @returns {URL} URL com origem do proxy
  */
 export function urlProxy(url, proxyPorta = ProxyPorta, proxyHostname = "localhost") {
-	if (!(url instanceof URL)) url = new URL(url);
-	return new URL(url.toString().slice(url.origin.length), `http://${proxyHostname}:${proxyPorta}`);
+	if (url && !(url instanceof URL)) url = new URL(url);
+	return new URL(
+		url?.toString().slice(url.origin.length) || "",
+		`http://${proxyHostname}:${proxyPorta}`
+	);
 }
 
 /**
@@ -41,8 +44,8 @@ export function cabecalhosProxy(url) {
 /**
  * Função que instancia o servidor proxy
  * @param {number} [porta] Número da porta de escuta do servidor
- * @param {import("./util.js").OpçõesRecruta} [opcoes?] Opções adicionais do servidor
- * @returns {Server<typeof IncomingMessage, typeof ServerResponse>} O servidor proxy
+ * @param {import("./util.js").OpçõesRecruta} [opcoes] Opções adicionais do servidor
+ * @returns {import("node:http").Server<typeof import("node:http").IncomingMessage, typeof import("node:http").ServerResponse>} O servidor proxy
  */
 export default function RecrutaProxy(porta = ProxyPorta, opcoes) {
 	ProxyPorta = porta;
@@ -71,16 +74,30 @@ export default function RecrutaProxy(porta = ProxyPorta, opcoes) {
 		}
 	});
 
-	process.on("unhandledRejection", (erro) => {
-		throw erro;
-	});
-	process.on("uncaughtException", (erro) => {
-		depurador(/*"Kowalski ", */ "Relatório :" + erro.name, "\n" + erro.message, "\n" + erro.stack);
-		if (Executando.cp) {
-			// pm2 reiniciar
-			process.send("ready");
-		}
-	});
+	if (Executando.cli || Executando.cp) {
+		process.on("unhandledRejection", (erro) => {
+			throw erro;
+		});
+		process.on("uncaughtException", (erro) => {
+			depurador(
+				/*"Kowalski ", */ "Relatório :" + erro.name,
+				"\n" + erro.message,
+				"\n" + erro.stack
+			);
+			if (Executando.cp) {
+				// pm2 reiniciar
+				process.send("ready");
+			}
+		});
+	} else {
+		servidor.on("error", (erro) => {
+			depurador(
+				/*"Kowalski ", */ "Relatório :" + erro.name,
+				"\n" + erro.message,
+				"\n" + erro.stack
+			);
+		});
+	}
 
 	return servidor;
 }

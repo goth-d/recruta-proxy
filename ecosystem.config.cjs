@@ -4,7 +4,7 @@ module.exports = {
 	apps: [
 		{
 			name,
-			script: "./index.js",
+			script: "./src/index.js",
 			env: {
 				DEBUG_COLORS: 1,
 				DEBUG: `${name}:*`,

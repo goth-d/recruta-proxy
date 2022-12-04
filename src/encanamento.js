@@ -18,8 +18,8 @@ class MorganFluxoEscrevivel extends Escrevivel {
 
 /**
  * @callback RequisiçãoEncanamento
- * @param {IncomingMessage} req
- * @param {ServerResponse} res
+ * @param {import("node:http").IncomingMessage} req
+ * @param {import("node:http").ServerResponse} res
  * @param {EncanamentoGerenciadorFinal} aoTerminar Executado para completar a requisição no servidor
  * @returns {void}
  */
