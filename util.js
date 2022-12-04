@@ -7,8 +7,15 @@ const requerer = criarRequire(import.meta.url);
 /**
  * @typedef {Object} OpçõesRecruta
  * @property {boolean} [imprimeRegistros=true] Se o proxy imprime os registros dos sockets no console
+ * @property {OpçõesServidor} [servidor] Opções adicionais do servidor
  * @property {string} [depuradorString?] Espaço de nome utilizado pelo depurador no console, padrão para nome do app em `ecosystem.config.cjs`
  * @property {boolean} [depuradorOn=true] Se o depurador personalizado deve ser ativado
+ */
+
+/**
+ * @typedef {Object} OpçõesServidor
+ * @property {string} [predefinicaoEnderecoAlvo?] Utilizado quando não definido no cabeçalho `<scheme>://<hostname> | <scheme>://<hostname>:<port>`
+ * @property {boolean} [_respostaBinaria=false] Consume a resposta inicial e codifica em `"binary"`, sempre provê o cabeçalho `"Content-Length"`
  */
 
 /** @type {OpçõesRecruta} */
@@ -16,6 +23,12 @@ export const OpcoesPredefinidas = {
 	imprimeRegistros: true,
 	depuradorString: obterNomeProxy(),
 	depuradorOn: true,
+};
+
+/** @type {OpçõesServidor} */
+export const OpcoesPredefinidasServidor = {
+	predefinicaoEnderecoAlvo: undefined,
+	_respostaBinaria: false,
 };
 
 /**
@@ -41,23 +54,10 @@ export function obterNomeProxy() {
 }
 
 /**
- * Remove as propriedades que são, geralmente, recriadas entre cada requisição
- * @param {NodeJS.Dict.<string, string>} cabecalhosDic - Dicionário de cabeçalhos http
- * @returns {NodeJS.Dict.<string, string>} Um novo dicionário
- */
-function purgarCabecalhos(cabecalhosDic) {
-	const novoCabecalhosDic = {};
-	for (const c in cabecalhosDic)
-		if (!(c in httpCabecalhosPadroes)) novoCabecalhosDic[c] = cabecalhosDic[c];
-
-	return novoCabecalhosDic;
-}
-
-/**
  * Cria um novo cabeçalho purgado pelo proxy.
  * Todas propriedades customizadas são mantidas, assim como algumas propriedades padrões
- * @param {NodeJS.Dict.<string, string>} reqCabecalhosDic - Dicionário de cabeçalhos http provindo da requisição original
- * @returns {NodeJS.Dict.<string, string>} Um objeto de cabeçalhos
+ * @param {NodeJS.Dict<string | string[]>} reqCabecalhosDic - Dicionário de cabeçalhos http provindo da requisição original
+ * @returns {NodeJS.Dict<string | string[]>} Um objeto de cabeçalhos
  */
 export function mesclarCabecalhos(reqCabecalhosDic) {
 	const cabecalhosPurgado = purgarCabecalhos(reqCabecalhosDic);
@@ -67,6 +67,19 @@ export function mesclarCabecalhos(reqCabecalhosDic) {
 		if (c in reqCabecalhosDic) cabecalhos.append(c, reqCabecalhosDic[c]);
 
 	return cabecalhos;
+}
+
+/**
+ * Remove as propriedades que são, geralmente, recriadas entre cada requisição
+ * @param {NodeJS.Dict<string | string[]>} cabecalhosDic - Dicionário de cabeçalhos http
+ * @returns {NodeJS.Dict<string | string[]>} Um novo dicionário
+ */
+function purgarCabecalhos(cabecalhosDic) {
+	const novoCabecalhosDic = {};
+	for (const c in cabecalhosDic)
+		if (!(c in httpCabecalhosPadroes)) novoCabecalhosDic[c] = cabecalhosDic[c];
+
+	return novoCabecalhosDic;
 }
 
 /** @type {string[]} */
