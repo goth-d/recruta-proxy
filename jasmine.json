@@ -1,0 +1,10 @@
+{
+  "spec_dir": "testes",
+  "spec_files": [
+    "**/*[tT]este.?(m)js"
+  ],
+  "env": {
+    "stopSpecOnExpectationFailure": false,
+    "random": true
+  }
+}
